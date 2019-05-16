@@ -17,22 +17,18 @@ function loglik(param);
 
 	c = trans(b,w,DR);
 	v = zeros(NDRAWS,NALTMAX-1,NCSMAX,NP);
-	# v = zeros(NDRAWS,NALTMAX,NCSMAX,NP);
 
 	if NF > 0
 		ff = reshape(f,1,1,NF,1);
 		vf = reshape(sum(XF.*ff,dims=3),NALTMAX-1,NCSMAX,NP);
-		# vf = reshape(sum(XF.*ff,dims=3),NALTMAX,NCSMAX,NP);
 	else
 		vf = zeros(NALTMAX-1,NCSMAX,NP);
-		# vf = zeros(NALTMAX,NCSMAX,NP);
 	end
 
 	if NR > 0
 		cc = reshape(c,1,1,NR,NP,NDRAWS);
 		v = XR.*cc;
 		v = reshape(sum(v,dims=3),NALTMAX-1,NCSMAX,NP,NDRAWS);
-		# v = reshape(sum(v,dims=3),NALTMAX,NCSMAX,NP,NDRAWS);
 		v = v .+ vf;
 	else
 		v = vf;
@@ -41,10 +37,8 @@ function loglik(param);
 	v = exp.(v);
 	v[findall(isinf,v)] .= 10^20;
 	v = v.*S;
-	# yv = sum(v.* Y,dims=1);
 
 	p = 1 ./(1 .+ sum(v,dims=1));
-	# p = yv ./sum(v,dims=1);
 	p = prod(p,dims=2);
 	p = reshape(sum(p,dims=4)./NDRAWS,1,NP);
 	p[findall(!isfinite,p)] .= 1;
