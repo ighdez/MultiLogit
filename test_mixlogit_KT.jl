@@ -123,8 +123,7 @@ include("bfgsmin.jl")
 include("misc.jl")
 
 # Evaluate each involved function one time before iterate (makes computations faster)
-loglik(param)
-grf(param)
+#loglik(param)
 #numhess(loglik,param)
 
-@time res = bfgsmin(loglik,param,grf;hess=true,verbose=true,tol=1e-05)
+@time res = bfgsmin_mxl(loglik,param;verbose=true,tol=1e-06)
