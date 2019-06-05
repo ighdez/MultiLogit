@@ -15,8 +15,12 @@ function loglik(param;grad=false);
 		w = [];
 	end
 
+	p = zeros(NP)
+	g = zeros(NF+NR+NR,NP)
+
 	c = trans(b,w,DR);
 	v = zeros(NDRAWS,NALTMAX-1,NCSMAX,NP);
+
 
 	if NF > 0
 		ff = reshape(f,1,1,NF,1);
@@ -45,14 +49,14 @@ function loglik(param;grad=false);
 		gg = reshape(gg,NALTMAX-1,NCSMAX,1,NP,NDRAWS);
 
 		if NF > 0;
-			grf = -repeat(gg,1,1,NF,1,1).*XF;
+			grf = -gg.*XF;
 			grf = reshape(sum(sum(grf,dims=1),dims=2),NF,NP,NDRAWS);
 		else
 			grf = [];
 		end
 
 		if NR > 0
-			gg =  -repeat(gg,1,1,NR,1,1).*XR;
+			gg =  -gg.*XR;
 			grb,grw = der(b,w,DR);
 			grb = reshape(grb,1,1,NR,NP,NDRAWS);
 			grw = reshape(grw,1,1,NR,NP,NDRAWS);

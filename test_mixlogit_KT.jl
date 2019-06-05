@@ -12,6 +12,7 @@ using Random
 
 include("misc.jl")
 include("bfgsmin.jl")
+
 # Load data
 dat = read("data.txt",delim=" ",header=0);
 
@@ -92,17 +93,14 @@ for n = 1:NP
 	
 	for t = t1:t2;
 		k = sum(cs.==t)-1;
-		# k = sum(cs.==t);
 		S[1:k,1+t-t1,n] .= 1;
-		# Y[1:k,1+t-t1,n] .= yy[(cs.==t)]
+
 		if NF > 0
 			XF[1:k,1+t-t1,:,n] = xxf[(cs.==t) .& (yy .== 0),:] .- repeat(xxf[(cs.==t) .& (yy .== 1),:],k,1);
-			# XF[1:k,1+t-t1,:,n] = xxf[(cs.==t),:];
 		end
 
 		if NR > 0
 			XR[1:k,1+t-t1,:,n] = xx[(cs.==t) .& (yy .== 0),:] .- repeat(xx[(cs.==t) .& (yy .== 1),:],k,1);
-			# XR[1:k,1+t-t1,:,n] = xx[(cs.==t),:];
 		end
 	end
 end
@@ -113,17 +111,13 @@ end
 DR = makedraws();
 DR = permutedims(DR,[3,2,1]);
 
-# Uncomment to use the same draws as in KT code!
-# using MATLAB
-# DR = jarray(read_matfile("draws.mat")["DR"]);
-
 # Call likelihood function and BFGS minimizer
 include("llf_mxl.jl")
 include("bfgsmin.jl")
 include("misc.jl")
 
 # Evaluate each involved function one time before iterate (makes computations faster)
-#loglik(param)
-#numhess(loglik,param)
+loglik(param)
+numhess(loglik,param)
 
 @time res = bfgsmin_mxl(loglik,param;verbose=true,tol=1e-06)

@@ -41,7 +41,7 @@ function numhess(f,param; ep=1e-05)
 end
 
 # Function for step size computation
-function stepp(fx,x,ds;sigma=0.5,guess=1)
+function stepp(fx,x,ds;sigma=0.9,guess=1)
 
 	# This line search algorithm was ported from 
 	# Angel Luis Lopez code. More information available
@@ -55,7 +55,7 @@ function stepp(fx,x,ds;sigma=0.5,guess=1)
 	end
 
 	# Scalars
-	ro = 0.01;
+	ro = 1e-02;
 	t1 = 9;
 	t2 = 0.1;
 	t3 = 0.5;
@@ -88,13 +88,14 @@ function stepp(fx,x,ds;sigma=0.5,guess=1)
 		
 		# Evaluate function and search with alpha_i
 		ff[i],dff[i] = stepper(fx,x,ds,alpha[i])
-		# if abs(ff[i]) < finf
-			# flag = 1
-			# break
-		# end
+		
+		if (ff[i] <= finf) & (ff[i] > 0)
+			flag = 1
+			break
+		end
 		
 		# Check Wolfe conditions
-		if (ff[i] > f0 + alpha[i]*ro*df0) | (ff[i] >= f0)
+		if (ff[i] > f0 + alpha[i]*ro*df0) | (ff[i] >= ff[i-1]) # Changed from (ff[i] >= f0)
 			a[i] = alpha[i-1]; b[i] = alpha[i];
 			break
 		end

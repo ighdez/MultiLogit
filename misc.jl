@@ -2,7 +2,7 @@
 function makedraws()
 	dr = zeros(NDRAWS,NP,NR);
 	h=Array(0:(NDRAWS-1));
-	h=h'./NDRAWS;
+	h=h./NDRAWS;
 	for j=1:NR
 		for n=1:NP
 			draws=h .+rand(1)./NDRAWS; # Shift: Different shift for each person
