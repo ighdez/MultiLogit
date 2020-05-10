@@ -1,5 +1,5 @@
 # Log-likelihood function
-function loglik(param;grad=false);
+function loglik(param::Vector;grad=false);
 
 	if NF > 0
 		f = param[1:NF];
@@ -8,8 +8,14 @@ function loglik(param;grad=false);
 	end
 
 	if NR > 0
-		b = param[(NF+1):(NF+NR)];
-		w = param[(NF+NR+1):end];
+		if any(XRdist.==5)
+			b = zeros(NR)
+			b[XRdist.!=5] = param[(NF+1):(NF+sum(XRdist.!=5))]
+			w = param[(NF+sum(XRdist.!=5)+1):end]
+		else
+			b = param[(NF+1):(NF+NR)];
+			w = param[(NF+NR+1):end];
+		end
 	else
 		b = [];
 		w = [];
@@ -85,20 +91,22 @@ function loglik(param;grad=false);
 	# Back to prob
 	p = sum(p,dims=3)./NDRAWS;
 	p[findall(!isfinite,p)] .= 1;
+
+	# Log-likelihood
+	ll = - sum(log.(p));
 	
 	if grad
 		# Gradient
 		g = g./NDRAWS;
 		g = g./p;
-	end
-	
-	# Log-likelihood and gradient
-	ll = - sum(log.(p));
-	
-	if grad
 		g = reshape(-sum(g,dims=2),NF+NR+NR);
+
+		if NR>0 & any(XRdist.==5)
+			z=[ones(NF);(XRdist .!= 5);ones(NR)];
+			g=g[z.==1]
+		end
 		return(ll,g)
 	else
 		return(ll)
-	end
+	end	
 end

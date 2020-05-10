@@ -37,7 +37,7 @@ XFnames = ["hiperf","medhiperf"];
 
 # Regressors with random parameters,their distributions and names
 Xrandom = [ -dat[:,4]./10000 -dat[:,5] dat[:,6] dat[:,7] dat[:,9]];
-XRdist = [2,2,2,1,1]; # 1 = Normal / 2: Log-normal / 5: Normal with mean 0 
+XRdist = [2,2,5,1,1]; # 1 = Normal / 2: Log-normal / 5: Normal with mean 0 
 XRnames = ["price","opcost","range","ev","hybrid"];
 
 # Number of MLHS draws and fix random seed (I'm not sure if seed is working, please check!)

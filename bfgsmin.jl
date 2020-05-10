@@ -1,5 +1,6 @@
-using LinearAlgebra: inv, Matrix, I, norm, diagind
+using LinearAlgebra: inv, Matrix, I, norm, diag, diagind
 using Calculus: hessian
+using Distributions: Normal, cdf
 
 # Improved numerical hessian function (with broadcast operations)
 function numhess(f,param; ep=1e-05)
@@ -321,4 +322,67 @@ function bfgsmin_mxl(llf,x0; maxiter=1000,tol=1e-06,verbose=false);
 	results = Dict("convergence" => convergence, "iterations" => iter, "max_f" => f_val, "par_max" => x, "hessian" => h_final);
 	
 	return(results);
+end
+
+# Present results from a bfgsmin_mxl object
+# Thanks to Riccardo Scarpa for the contribution!
+function summary_mxl(results,auxiliary_dict = Param_info)
+
+	# Recover estimation parameters
+	x = results["par_max"];
+	h_final = results["hessian"];
+    vcv = inv(h_final); # variance-covariance
+    se = diag(vcv);     # st. errors
+    ts = abs.(x) ./ se ; # t-values
+    ps = ones(size(ts)) - cdf.(Normal(0,1),ts); # p-values
+
+	# Arrange names and add zeros if coefficients distribute normal with mean zero
+	NF = size(auxiliary_dict["namesF"],1);
+	NR = size(auxiliary_dict["namesR"],1);
+	XRdist = auxiliary_dict["distR"];
+	namesX = [auxiliary_dict["namesF"];"b_".*auxiliary_dict["namesR"];"w_".*auxiliary_dict["namesR"]];
+
+	f_x = x[1:NF];
+	f_se = se[1:NF];
+	f_t = ts[1:NF];
+	f_p = ps[1:NF];
+
+	if any(XRdist.==5)
+		b_x = zeros(NR);
+		b_x[XRdist.!=5] = x[(NF+1):(NF+sum(XRdist.!=5))];
+
+		b_se = zeros(NR);
+		b_se[XRdist.!=5] = se[(NF+1):(NF+sum(XRdist.!=5))];
+
+		b_t = zeros(NR);
+		b_t[XRdist.!=5] = ts[(NF+1):(NF+sum(XRdist.!=5))];
+
+		b_p = zeros(NR);
+		b_p[XRdist.!=5] = ps[(NF+1):(NF+sum(XRdist.!=5))];
+
+		w_x = x[(NF+sum(XRdist.!=5)+1):end];
+		w_se = se[(NF+sum(XRdist.!=5)+1):end];
+		w_t = ts[(NF+sum(XRdist.!=5)+1):end];
+		w_p = ps[(NF+sum(XRdist.!=5)+1):end];
+	else
+		b_x = x[(NF+1):(NF+NR)];
+		b_se = se[(NF+1):(NF+NR)];
+		b_t = ts[(NF+1):(NF+NR)];
+		b_p = ps[(NF+1):(NF+NR)];
+
+		w_x = x[(NF+NR+1):end];
+		w_se = se[(NF+NR+1):end];
+		w_t = ts[(NF+NR+1):end];
+		w_p = ps[(NF+NR+1):end];
+	end
+
+	x = [f_x;b_x;w_x];
+	se = [f_se;b_se;w_se];
+	ts = [f_t;b_t;w_t];
+	ps = [f_p;b_p;w_p];
+
+	xs = hcat(namesX,x,se,ts,ps); # grouping for output
+	xs = [["Variable" "Coefficient" "Std.err." "T" "P-value"];xs]
+
+	return(xs)
 end
