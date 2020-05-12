@@ -16,12 +16,6 @@ include("bfgsmin.jl")
 # Load data
 dat = read("data.txt",delim=" ",header=0);
 
-# Some scalars
-NP = 100;
-NALT = 3;
-NCS = 1484;
-NROWS = 1484*3;
-
 # Declare variable that contains individuals
 id = dat[:,1];
 
@@ -52,6 +46,12 @@ Wrandom = [0.01,0.01,0.01,0.01,0.01];	# Must have same dimension of Brandom
 ######## Do not change the code from this line ########
 #######################################################
 
+# Some scalars
+NP = size(unique(id),1)
+# NALT = 3;
+NCS = size(unique(csid),1);
+# NROWS = 1484*3;
+
 # Initialize parameters
 param = [Bfixed;Brandom[XRdist.!=5];Wrandom];
 
@@ -74,8 +74,17 @@ end
 
 NCSMAX = trunc(Int,maximum(nn));
 
-NR = size(Xrandom)[2];
-NF = size(Xfixed)[2];
+if size(Xrandom,1) > 0;
+	NR = size(Xrandom)[2];
+else
+	NR = 0;
+end
+
+if size(Xfixed,2) > 0;
+	NF = size(Xfixed)[2];
+else
+	NF = 0;
+end
 
 # Generate matrices as in Kenneth Train's code
 XR=zeros(NALTMAX-1,NCSMAX,NR,NP);
@@ -129,7 +138,7 @@ include("misc.jl")
 loglik(param)
 
 @time numhess(loglik,param);
-@time hessian(loglik,param);
+# @time hessian(loglik,param);
 
 @time res = bfgsmin_mxl(loglik,param;verbose=true,tol=1e-06);
 

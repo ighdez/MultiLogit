@@ -332,7 +332,7 @@ function summary_mxl(results,auxiliary_dict = Param_info)
 	x = results["par_max"];
 	h_final = results["hessian"];
     vcv = inv(h_final); # variance-covariance
-    se = diag(vcv);     # st. errors
+    se = sqrt.(diag(vcv));     # st. errors
     ts = abs.(x) ./ se ; # t-values
     ps = ones(size(ts)) - cdf.(Normal(0,1),ts); # p-values
 

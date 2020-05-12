@@ -23,6 +23,8 @@ function trans(b,w,dr);
 	if NR > 0
 		c = b .+ w.*dr;
 		c[(XRdist .== 2),:,:] = exp.(c[(XRdist .== 2),:,:]);
+	else
+		c = [];
 	end
 	return(c)
 end
